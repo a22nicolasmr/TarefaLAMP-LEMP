@@ -1,0 +1,51 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./prestashop_8.2.1_lemp:/app
+      #vhost nginx
+      - ./nginx-lemp/vhost-nginx.conf:/etc/nginx/conf.d/vhost-nginx.conf
+      #certificados
+      - ./certs:/etc/ssl
+    networks:
+      redelamplemp:
+        aliases:
+          - test.lan
+    env_file:
+      - .env.dev
+
+  phpserver:
+    build: php-lemp
+    volumes:
+      - ./prestashop_8.2.1_lemp:/app
+      #php.ini
+    networks:
+      redelamplemp:
+
+  basededatos:
+    image: mysql:5.7
+    env_file:
+      - .env.dev
+    volumes:
+      - datos:/var/lib/mysql
+    networks:
+      redelamplemp:
+
+  #phpmuadmin se se necesita
+  cliente:
+    hostname: cliente
+    image: brunosct/debian12-cliente-firefox
+    networks:
+      - redelamplemp
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+
+volumes:
+  datos:
+networks:
+  redelamplemp:
